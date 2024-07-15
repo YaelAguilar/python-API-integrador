@@ -1,5 +1,5 @@
 from flask import jsonify
-from app.models.ConsumoFertilizante import ConsumoFertilizante
+from app.models.consumo_fertilizante import ConsumoFertilizante
 from app.db import db
 import datetime
 
