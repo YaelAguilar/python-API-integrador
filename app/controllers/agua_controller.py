@@ -1,14 +1,8 @@
-from flask import jsonify
 from app.models.consumo_agua import ConsumoAgua
 from app.db import db
-import datetime
 
 def calcular_cantidad_agua(sensor_id, cantidad):
-    nuevo_consumo = ConsumoAgua(
-        sensor_id=sensor_id,
-        cantidad=cantidad,
-        timestamp=datetime.datetime.utcnow()
-    )
-    db.session.add(nuevo_consumo)
+    consumo = ConsumoAgua(sensor_id=sensor_id, cantidad=cantidad)
+    db.session.add(consumo)
     db.session.commit()
-    return jsonify({'mensaje': 'Consumo de agua registrado exitosamente'}), 201
+    print(f"Agua consumida registrada: Sensor ID {sensor_id}, Cantidad {cantidad} litros")

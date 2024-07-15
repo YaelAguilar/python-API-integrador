@@ -20,6 +20,7 @@ def start_consuming():
     connection = get_rabbitmq_connection()
     channel = connection.channel()
 
+    # colas a las que se suscribirá
     channel.queue_declare(queue='sensor_data')
 
     channel.basic_consume(

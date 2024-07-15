@@ -1,14 +1,8 @@
-from flask import jsonify
 from app.models.consumo_fertilizante import ConsumoFertilizante
 from app.db import db
-import datetime
 
 def calcular_cantidad_fertilizante(sensor_id, cantidad):
-    nuevo_consumo = ConsumoFertilizante(
-        sensor_id=sensor_id,
-        cantidad=cantidad,
-        timestamp=datetime.datetime.utcnow()
-    )
-    db.session.add(nuevo_consumo)
+    consumo = ConsumoFertilizante(sensor_id=sensor_id, cantidad=cantidad)
+    db.session.add(consumo)
     db.session.commit()
-    return jsonify({'mensaje': 'Consumo de fertilizante registrado exitosamente'}), 201
+    print(f"Fertilizante consumido registrado: Sensor ID {sensor_id}, Cantidad {cantidad} litros")
