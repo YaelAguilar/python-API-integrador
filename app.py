@@ -1,6 +1,6 @@
 from app import create_app
 
-#Archivo principal de la aplicación
+# Archivo principal de la aplicación
 app = create_app()
 
 if __name__ == '__main__':

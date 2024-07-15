@@ -1,11 +1,10 @@
 from flask import request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import datetime
 import re
 from app.models.user import User
-from app import db
-from app.utils.token import token_requerido
+from app.db import db
 
 def register():
     datos = request.json
@@ -29,13 +28,9 @@ def register():
     db.session.add(nuevo_usuario)
     db.session.commit()
 
-    payload = {
-        'correo': correo,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
-    }
-    token = jwt.encode(payload, request.app.config['SECRET_KEY'], algorithm='HS256')
+    access_token = create_access_token(identity={'correo': correo}, expires_delta=datetime.timedelta(days=7))
 
-    return jsonify({'mensaje': 'Usuario registrado exitosamente', 'token': token}), 201
+    return jsonify({'mensaje': 'Usuario registrado exitosamente', 'token': access_token}), 201
 
 def login():
     datos = request.json
@@ -45,15 +40,12 @@ def login():
     usuario = User.query.filter_by(correo=correo).first()
 
     if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
-        payload = {
-            'correo': correo,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
-        }
-        token = jwt.encode(payload, request.app.config['SECRET_KEY'], algorithm='HS256')
-        return jsonify({'mensaje': 'Inicio de sesión exitoso', 'token': token}), 200
+        access_token = create_access_token(identity={'correo': correo}, expires_delta=datetime.timedelta(days=7))
+        return jsonify({'mensaje': 'Inicio de sesión exitoso', 'token': access_token}), 200
     else:
         return jsonify({'mensaje': 'Credenciales inválidas'}), 401
 
-@token_requerido
-def protected_route(usuario_actual):
-    return jsonify({'mensaje': 'Esta es una ruta protegida', 'usuario': usuario_actual.nombre})
+@jwt_required()
+def protected_route():
+    usuario_actual = get_jwt_identity()
+    return jsonify({'mensaje': 'Esta es una ruta protegida', 'usuario': usuario_actual})
