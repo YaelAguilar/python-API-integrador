@@ -19,7 +19,6 @@ def create_app():
     jwt.init_app(app)
 
     with app.app_context():
-        # Importar todos los modelos aquí
         from app.models.user import User
         from app.models.sensor import Sensor
         from app.models.lectura_sensor import LecturaSensor
@@ -35,7 +34,6 @@ def create_app():
         app.register_blueprint(auth_bp)
         app.register_blueprint(public_bp)
 
-    # Iniciar el suscriptor de RabbitMQ en un hilo separado
     Thread(target=start_consuming).start()
 
     return app
