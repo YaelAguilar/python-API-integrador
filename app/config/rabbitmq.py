@@ -1,15 +1,20 @@
 import os
 import pika
+import ssl
 
 def get_rabbitmq_connection():
-    credentials = pika.PlainCredentials(
-        username=os.getenv('RABBITMQ_USER', 'guest'),
-        password=os.getenv('RABBITMQ_PASSWORD', 'guest')
-    )
-    parameters = pika.ConnectionParameters(
-        host=os.getenv('RABBITMQ_HOST', 'localhost'),
-        port=int(os.getenv('RABBITMQ_PORT', 5672)),
-        credentials=credentials
-    )
-    connection = pika.BlockingConnection(parameters)
+    url = os.getenv('CLOUDAMQP_URL', 'amqps://vumnphwp:04G37mBLNQfL_i6oM1cfMffWzwOOJifD@shrimp.rmq.cloudamqp.com/vumnphwp')
+    params = pika.URLParameters(url)
+    
+    context = ssl.create_default_context()
+    params.ssl_options = pika.SSLOptions(context)
+
+    connection = pika.BlockingConnection(params)
     return connection
+
+try:
+    connection = get_rabbitmq_connection()
+    channel = connection.channel()
+    print("Conexión exitosa a RabbitMQ")
+except pika.exceptions.AMQPConnectionError as e:
+    print(f"Error de conexión a RabbitMQ: {e}")
