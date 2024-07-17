@@ -1,4 +1,5 @@
 import os
+import time
 import pika
 import ssl
 
@@ -26,9 +27,7 @@ def start_consuming():
         queue_names = ['flujoAgua', 'nivelAgua', 'ph']
 
         for queue_name in queue_names:
-            # Declarar la cola (asegúrate de que la cola esté creada en RabbitMQ)
             channel.queue_declare(queue=queue_name, durable=True)
-            # Configura la suscripción para recibir mensajes
             channel.basic_consume(queue=queue_name, on_message_callback=on_message)
 
         print("Esperando mensajes de las colas. Presiona CTRL+C para salir.")
