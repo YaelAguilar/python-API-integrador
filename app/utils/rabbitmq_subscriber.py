@@ -7,10 +7,10 @@ import time
 
 def callback(ch, method, properties, body):
     data = json.loads(body)
-    sensor_id = data['sensor_id']
-    tipo = data['tipo']
-    cantidad = data['cantidad']
-    timestamp = data['timestamp']
+    sensor_id = data.get('sensor_id')
+    tipo = data.get('tipo')
+    cantidad = data.get('cantidad')
+    timestamp = data.get('timestamp')
 
     if tipo == 'agua':
         calcular_cantidad_agua(sensor_id, cantidad)
@@ -23,7 +23,7 @@ def start_consuming():
             connection = get_rabbitmq_connection()
             channel = connection.channel()
 
-            # colas a las que se suscribirá
+            # Colas a las que se suscribirá
             channel.queue_declare(queue='sensor_data')
 
             channel.basic_consume(
@@ -34,5 +34,9 @@ def start_consuming():
             channel.start_consuming()
         except pika.exceptions.AMQPConnectionError as e:
             print(f"Error de conexión a RabbitMQ: {e}")
+            print("Reintentando en 5 segundos...")
+            time.sleep(5)
+        except Exception as e:
+            print(f"Ocurrió un error inesperado: {e}")
             print("Reintentando en 5 segundos...")
             time.sleep(5)

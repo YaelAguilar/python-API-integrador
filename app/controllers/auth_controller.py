@@ -9,10 +9,11 @@ from app.db import db
 def register():
     datos = request.json
     nombre = datos.get('nombre')
+    apellidos = datos.get('apellidos')
     correo = datos.get('correo')
     contraseña = datos.get('contraseña')
 
-    if not correo or not contraseña:
+    if not nombre or not apellidos or not correo or not contraseña:
         return jsonify({'mensaje': 'Datos faltantes'}), 400
     if not re.match(r"[^@]+@[^@]+\.[^@]+", correo):
         return jsonify({'mensaje': 'Formato de correo inválido'}), 400
@@ -24,7 +25,7 @@ def register():
         return jsonify({'mensaje': 'El usuario ya existe'}), 400
 
     contraseña_hash = generate_password_hash(contraseña)
-    nuevo_usuario = User(nombre=nombre, correo=correo, contraseña_hash=contraseña_hash)
+    nuevo_usuario = User(nombre=nombre, apellidos=apellidos, correo=correo, contraseña_hash=contraseña_hash)
     db.session.add(nuevo_usuario)
     db.session.commit()
 
@@ -36,6 +37,9 @@ def login():
     datos = request.json
     correo = datos.get('correo')
     contraseña = datos.get('contraseña')
+
+    if not correo or not contraseña:
+        return jsonify({'mensaje': 'Datos faltantes'}), 400
 
     usuario = User.query.filter_by(correo=correo).first()
 
