@@ -35,17 +35,17 @@ def register():
 
 def login():
     datos = request.json
-    usuario = datos.get('usuario')
+    correo = datos.get('correo')
     contraseña = datos.get('contraseña')
 
-    if not usuario or not contraseña:
+    if not correo or not contraseña:
         return jsonify({'mensaje': 'Datos faltantes'}), 400
 
-    usuario = User.query.filter_by(correo=usuario).first()
+    usuario = User.query.filter_by(correo=correo).first()
 
     if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
         access_token = create_access_token(identity={'correo': usuario.correo}, expires_delta=datetime.timedelta(days=7))
-        return jsonify({'mensaje': 'Inicio de sesión exitoso', 'token': access_token, 'usuario': {
+        return jsonify({'token': access_token, 'usuario': {
             'id': usuario.id,
             'email': usuario.correo,
             'nombre': usuario.nombre,
