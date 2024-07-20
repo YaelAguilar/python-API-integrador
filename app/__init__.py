@@ -18,11 +18,12 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    print("Connecting to database:", app.config['SQLALCHEMY_DATABASE_URI'])
 
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app)  # Configurar CORS
+    CORS(app) #CORS
 
     with app.app_context():
         from app.models.user import User
