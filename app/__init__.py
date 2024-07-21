@@ -18,7 +18,6 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    print("Connecting to database:", app.config['SQLALCHEMY_DATABASE_URI'])
 
     db.init_app(app)
     migrate.init_app(app, db)
