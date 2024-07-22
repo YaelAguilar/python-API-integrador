@@ -29,7 +29,7 @@ def register():
     db.session.add(nuevo_usuario)
     db.session.commit()
 
-    access_token = create_access_token(identity={'correo': correo}, expires_delta=datetime.timedelta(days=7), secret_key='jwt_secret default')
+    access_token = create_access_token(identity={'correo': correo}, expires_delta=datetime.timedelta(days=7))
     return jsonify({'mensaje': 'Usuario registrado exitosamente', 'token': access_token}), 201
 
 def login():
