@@ -3,7 +3,9 @@ import json
 from app.config.rabbitmq import get_rabbitmq_connection
 from app.controllers.agua_controller import calcular_cantidad_agua
 from app.controllers.fertilizante_controller import calcular_cantidad_fertilizante
+from app.controllers.tiempo_fertilizante_controller import calcular_tiempo_en_agotar_fertilizante
 import time
+import datetime
 
 def callback(ch, method, properties, body):
     data = json.loads(body)
@@ -11,11 +13,15 @@ def callback(ch, method, properties, body):
     tipo = data.get('tipo')
     cantidad = data.get('cantidad')
     timestamp = data.get('timestamp')
+    inicio = data.get('inicio')
+    fin = data.get('fin')
 
     if tipo == 'agua':
-        calcular_cantidad_agua(sensor_id, cantidad)
+        calcular_cantidad_agua(sensor_id, cantidad, timestamp)
     elif tipo == 'fertilizante':
-        calcular_cantidad_fertilizante(sensor_id, cantidad)
+        calcular_cantidad_fertilizante(sensor_id, cantidad, timestamp)
+        if inicio and fin:
+            calcular_tiempo_en_agotar_fertilizante(sensor_id, inicio, fin)
 
 def start_consuming():
     while True:
