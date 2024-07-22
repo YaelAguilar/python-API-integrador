@@ -6,6 +6,7 @@ from app.controllers.fertilizante_controller import calcular_cantidad_fertilizan
 from app.controllers.tiempo_fertilizante_controller import calcular_tiempo_en_agotar_fertilizante
 import time
 import datetime
+from app.utils.websocket_client import send_to_websocket
 
 def callback(ch, method, properties, body):
     data = json.loads(body)
@@ -16,10 +17,14 @@ def callback(ch, method, properties, body):
     inicio = data.get('inicio')
     fin = data.get('fin')
 
-    if tipo == 'agua':
+    print(f"Mensaje recibido de la cola {method.routing_key}: {data}")
+
+    if method.routing_key == 'flujoAgua' or tipo == 'agua':
         calcular_cantidad_agua(sensor_id, cantidad, timestamp)
-    elif tipo == 'fertilizante':
+        send_to_websocket('flujoAgua', {'sensor_id': sensor_id, 'cantidad': cantidad, 'timestamp': timestamp})
+    elif method.routing_key == 'nivelFertilizante' or tipo == 'fertilizante':
         calcular_cantidad_fertilizante(sensor_id, cantidad, timestamp)
+        send_to_websocket('nivelFertilizante', {'sensor_id': sensor_id, 'cantidad': cantidad, 'timestamp': timestamp})
         if inicio and fin:
             calcular_tiempo_en_agotar_fertilizante(sensor_id, inicio, fin)
 
@@ -29,12 +34,12 @@ def start_consuming():
             connection = get_rabbitmq_connection()
             channel = connection.channel()
 
-            # Colas a las que se suscribirá
-            channel.queue_declare(queue='sensor_data')
+            # Colas a las que se suscribe
+            queue_names = ['flujoAgua', 'nivelAgua', 'nivelFertilizante', 'ph']
 
-            channel.basic_consume(
-                queue='sensor_data', on_message_callback=callback, auto_ack=True
-            )
+            for queue_name in queue_names:
+                channel.queue_declare(queue=queue_name, durable=True)
+                channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
 
             print(' [*] Esperando por mensajes. Para salir presiona CTRL+C')
             channel.start_consuming()
@@ -46,3 +51,6 @@ def start_consuming():
             print(f"Ocurrió un error inesperado: {e}")
             print("Reintentando en 5 segundos...")
             time.sleep(5)
+
+if __name__ == '__main__':
+    start_consuming()

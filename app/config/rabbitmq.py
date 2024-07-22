@@ -24,7 +24,7 @@ def start_consuming():
         channel = connection.channel()
 
         # Nombres de las colas
-        queue_names = ['sensor_data']
+        queue_names = ['flujoAgua', 'nivelAgua', 'nivelFertilizante', 'ph']
 
         for queue_name in queue_names:
             channel.queue_declare(queue=queue_name, durable=True)
