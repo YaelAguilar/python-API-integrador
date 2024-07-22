@@ -7,4 +7,3 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'clave_secreta_default')
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'mysql://admin:themegapassword99@database-soursop.cwh2wgvynejc.us-east-1.rds.amazonaws.com/soursop')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = os.getenv('JWT SECRET KEY ', 'jwt_secret default')
