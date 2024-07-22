@@ -43,7 +43,7 @@ def login():
     usuario = User.query.filter_by(correo=correo).first()
 
     if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
-        access_token = create_access_token(identity={'correo': usuario.correo}, expires_delta=datetime.timedelta(days=7))
+        access_token = create_access_token(identity={'correo': usuario.correo}, expires_delta=datetime.timedelta(days=7) )#sads
         return jsonify({'token': access_token, 'usuario': {
             'id': usuario.id,
             'email': usuario.correo,
