@@ -26,7 +26,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app)  # CORS
+
+    # Permitir todos los orígenes
+    CORS(app)
 
     with app.app_context():
         from app.models.user import User
