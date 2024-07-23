@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.agua_controller import calcular_cantidad_agua
 from app.controllers.fertilizante_controller import calcular_cantidad_fertilizante
+from app.controllers.sensor_data_controller import obtener_consumo_agua, obtener_consumo_fertilizante, obtener_estado_planta, obtener_lecturas_sensor
 
 sensor_bp = Blueprint('sensor', __name__)
 
@@ -19,3 +20,20 @@ def registrar_fertilizante():
     cantidad = datos.get('cantidad')
     calcular_cantidad_fertilizante(sensor_id, cantidad)
     return jsonify({'mensaje': 'Datos de fertilizante procesados exitosamente'}), 201
+
+# Rutas para obtener datos
+@sensor_bp.route('/consumo_agua', methods=['GET'])
+def get_consumo_agua():
+    return obtener_consumo_agua()
+
+@sensor_bp.route('/consumo_fertilizante', methods=['GET'])
+def get_consumo_fertilizante():
+    return obtener_consumo_fertilizante()
+
+@sensor_bp.route('/estado_planta', methods=['GET'])
+def get_estado_planta():
+    return obtener_estado_planta()
+
+@sensor_bp.route('/lecturas_sensor', methods=['GET'])
+def get_lecturas_sensor():
+    return obtener_lecturas_sensor()

@@ -3,7 +3,12 @@ import json
 import time
 from app.config.rabbitmq import get_rabbitmq_connection
 from flask import current_app
-from app.utils.websocket_client import send_to_websocket
+from app.db import db
+from app.models.consumo_agua import ConsumoAgua
+from app.models.consumo_fertilizante import ConsumoFertilizante
+from app.models.estado_planta import EstadoPlanta
+from app.models.lectura_sensor import LecturaSensor
+from app.models.sensor import Sensor
 
 def callback(ch, method, properties, body):
     current_app.logger.info(f"Mensaje recibido: {body}")
@@ -11,44 +16,40 @@ def callback(ch, method, properties, body):
         data = json.loads(body)
         current_app.logger.info(f"Datos decodificados: {data}")
 
-        if method.routing_key == 'flujoAgua' and 'flow_rate_lpm' in data and 'total_liters' in data:
-            transformed_data = {
-                "tipo": "flujoAgua",
-                "data": {
-                    "litrosPorMinuto": data['flow_rate_lpm'],
-                    "totalConsumido": data['total_liters']
-                }
-            }
-        elif method.routing_key == 'nivelAgua' and 'sensor_state' in data:
-            transformed_data = {
-                "tipo": "nivelAgua",
-                "data": {
-                    "sensorState": data['sensor_state']
-                }
-            }
-        elif method.routing_key == 'nivelFertilizante' and 'sensor_state' in data:
-            transformed_data = {
-                "tipo": "nivelFertilizante",
-                "data": {
-                    "sensorState": data['sensor_state']
-                }
-            }
-        elif method.routing_key == 'ph' and 'humidity' in data and 'temperature' in data and 'conductivity' in data:
-            transformed_data = {
-                "tipo": "ph",
-                "data": {
-                    "humedad": data['humidity'],
-                    "temperatura": data['temperature'],
-                    "conductividad": data['conductivity']
-                }
-            }
-        else:
-            current_app.logger.error(f"Datos incompletos o no reconocidos recibidos: {data}")
-            return
-        
-        current_app.logger.info(f"Transformado a: {transformed_data}")
-        send_to_websocket(transformed_data['tipo'], transformed_data)
-        current_app.logger.info(f"Enviando datos a WebSocket: {transformed_data}")
+        # Procesar flujo de agua
+        if 'litrosPorMinuto' in data and 'totalConsumido' in data:
+            sensor = Sensor.query.filter_by(tipo="Sensor_agua").first()
+            if sensor:
+                consumo_agua = ConsumoAgua(sensor_id=sensor.sensor_id, cantidad=data['totalConsumido'])
+                db.session.add(consumo_agua)
+                db.session.commit()
+                current_app.logger.info(f"Registro guardado en la tabla ConsumoAgua: {data}")
+
+        # Procesar nivel de agua
+        elif 'sensorState' in data:
+            sensor = Sensor.query.filter_by(tipo="Sensor_agua").first()
+            if sensor:
+                lectura_sensor = LecturaSensor(sensor_id=sensor.sensor_id, valor=1 if data['sensorState'] == 'hay agua' else 0, unidad='estado')
+                db.session.add(lectura_sensor)
+                db.session.commit()
+                current_app.logger.info(f"Registro guardado en la tabla LecturaSensor para nivelAgua: {data}")
+
+        # Procesar nivel de fertilizante
+        elif 'sensorState' in data:
+            sensor = Sensor.query.filter_by(tipo="sensor_fertilizante").first()
+            if sensor:
+                lectura_sensor = LecturaSensor(sensor_id=sensor.sensor_id, valor=1 if data['sensorState'] == 'hay fertilizante' else 0, unidad='estado')
+                db.session.add(lectura_sensor)
+                db.session.commit()
+                current_app.logger.info(f"Registro guardado en la tabla LecturaSensor para nivelFertilizante: {data}")
+
+        # Procesar pH
+        elif 'humedad' in data and 'temperatura' in data and 'conductividad' in data:
+            estado_planta = EstadoPlanta(humedad=data['humedad'], temperatura=data['temperatura'], conductividad=data['conductividad'])
+            db.session.add(estado_planta)
+            db.session.commit()
+            current_app.logger.info(f"Registro guardado en la tabla EstadoPlanta: {data}")
+
     except json.JSONDecodeError:
         current_app.logger.error(f"Error al decodificar el JSON: {body}")
     except Exception as e:
