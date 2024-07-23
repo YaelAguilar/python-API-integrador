@@ -11,7 +11,7 @@ def callback(ch, method, properties, body):
         data = json.loads(body)
         current_app.logger.info(f"Datos decodificados: {data}")
 
-        if 'flow_rate_lpm' in data and 'total_liters' in data:
+        if method.routing_key == 'flujoAgua' and 'flow_rate_lpm' in data and 'total_liters' in data:
             transformed_data = {
                 "tipo": "flujoAgua",
                 "data": {
@@ -19,11 +19,36 @@ def callback(ch, method, properties, body):
                     "totalConsumido": data['total_liters']
                 }
             }
-            current_app.logger.info(f"Transformado a: {transformed_data}")
-            send_to_websocket('flujoAgua', transformed_data)
-            current_app.logger.info(f"Enviando datos a WebSocket: {transformed_data}")
+        elif method.routing_key == 'nivelAgua' and 'sensor_state' in data:
+            transformed_data = {
+                "tipo": "nivelAgua",
+                "data": {
+                    "sensorState": data['sensor_state']
+                }
+            }
+        elif method.routing_key == 'nivelFertilizante' and 'sensor_state' in data:
+            transformed_data = {
+                "tipo": "nivelFertilizante",
+                "data": {
+                    "sensorState": data['sensor_state']
+                }
+            }
+        elif method.routing_key == 'ph' and 'humidity' in data and 'temperature' in data and 'conductivity' in data:
+            transformed_data = {
+                "tipo": "ph",
+                "data": {
+                    "humedad": data['humidity'],
+                    "temperatura": data['temperature'],
+                    "conductividad": data['conductivity']
+                }
+            }
         else:
-            current_app.logger.error(f"Datos incompletos recibidos: {data}")
+            current_app.logger.error(f"Datos incompletos o no reconocidos recibidos: {data}")
+            return
+        
+        current_app.logger.info(f"Transformado a: {transformed_data}")
+        send_to_websocket(transformed_data['tipo'], transformed_data)
+        current_app.logger.info(f"Enviando datos a WebSocket: {transformed_data}")
     except json.JSONDecodeError:
         current_app.logger.error(f"Error al decodificar el JSON: {body}")
     except Exception as e:

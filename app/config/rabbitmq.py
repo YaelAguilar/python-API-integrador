@@ -2,6 +2,9 @@ import os
 import pika
 import time
 import ssl
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_rabbitmq_connection():
     url = os.getenv('CLOUDAMQP_URL', 'amqps://vumnphwp:04G37mBLNQfL_i6oM1cfMffWzwOOJifD@shrimp.rmq.cloudamqp.com/vumnphwp')
@@ -24,7 +27,7 @@ def start_consuming():
         channel = connection.channel()
 
         # Nombres de las colas
-        queue_names = ['flujoAgua']
+        queue_names = ['flujoAgua', 'nivelAgua', 'nivelFertilizante', 'ph']
 
         for queue_name in queue_names:
             channel.queue_declare(queue=queue_name, durable=True)
