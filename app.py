@@ -21,14 +21,13 @@ if __name__ == '__main__':
         app.thread_websocket = Thread(target=run_websocket_client)
         app.thread_websocket.start()
 
-    # certfile_path = os.getenv('CERTFILE_PATH')
-    # keyfile_path = os.getenv('KEYFILE_PATH')
+    certfile_path = os.getenv('CERTFILE_PATH')
+    keyfile_path = os.getenv('KEYFILE_PATH')
     
-    # context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-    # context.load_cert_chain(certfile=certfile_path, keyfile=keyfile_path)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    context.load_cert_chain(certfile=certfile_path, keyfile=keyfile_path)
     
-    app.run(host='0.0.0.0', port=3004, debug=True)
-    # ssl_context=context
+    app.run(ssl_context=context, host='0.0.0.0', port=3004, debug=True)
     
     app.thread_rabbitmq.join()
     app.thread_websocket.join()
