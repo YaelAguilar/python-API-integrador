@@ -1,21 +1,9 @@
-from app.models.consumo_fertilizante import ConsumoFertilizante
-from app.models.sensor import Sensor
-from app.db import db
-from flask import jsonify
-from app.utils.websocket_client import send_to_websocket
+from flask import jsonify, current_app
 
-def calcular_cantidad_fertilizante(sensor_id, cantidad, timestamp):
-    print(f"Datos recibidos para fertilizante - Sensor ID: {sensor_id}, Cantidad: {cantidad}, Timestamp: {timestamp}")
+def calcular_cantidad_fertilizante(sensor_id, cantidad):
+    if sensor_id is None or cantidad is None:
+        current_app.logger.error(f"Datos incompletos recibidos: Sensor ID: {sensor_id}, Cantidad: {cantidad}")
+        return jsonify({'mensaje': 'Datos incompletos'}), 400
 
-    sensor = Sensor.query.get(sensor_id)
-    if not sensor:
-        return jsonify({'mensaje': 'Sensor no encontrado'}), 400
-
-    consumo = ConsumoFertilizante(sensor_id=sensor_id, cantidad=cantidad, timestamp=timestamp)
-    db.session.add(consumo)
-    db.session.commit()
-    print(f"Fertilizante consumido registrado: Sensor ID {sensor_id}, Cantidad {cantidad} litros")
-
-    send_to_websocket('nivelFertilizante', {'sensor_id': sensor_id, 'cantidad': cantidad, 'timestamp': timestamp})
-
-    return jsonify({'mensaje': 'Consumo de fertilizante registrado exitosamente'}), 201
+    current_app.logger.info(f"Datos recibidos para fertilizante - Sensor ID: {sensor_id}, Cantidad: {cantidad}")
+    return jsonify({'mensaje': 'Datos de fertilizante procesados exitosamente'}), 201

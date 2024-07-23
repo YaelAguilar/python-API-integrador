@@ -6,6 +6,5 @@ class EstadoPlanta(db.Model):
     temperatura = db.Column(db.Float, nullable=False)
     conductividad = db.Column(db.Float, nullable=False)
     humedad = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
 
     estimativos = db.relationship('EstimativoProduccion', backref='estado', lazy=True)

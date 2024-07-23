@@ -1,21 +1,9 @@
-from app.models.consumo_agua import ConsumoAgua
-from app.models.sensor import Sensor
-from app.db import db
-from flask import jsonify
-from app.utils.websocket_client import send_to_websocket
+from flask import jsonify, current_app
 
-def calcular_cantidad_agua(sensor_id, cantidad, timestamp):
-    print(f"Datos recibidos para agua - Sensor ID: {sensor_id}, Cantidad: {cantidad}, Timestamp: {timestamp}")
+def calcular_cantidad_agua(sensor_id, cantidad):
+    if sensor_id is None or cantidad is None:
+        current_app.logger.error(f"Datos incompletos recibidos: Sensor ID: {sensor_id}, Cantidad: {cantidad}")
+        return jsonify({'mensaje': 'Datos incompletos'}), 400
 
-    sensor = Sensor.query.get(sensor_id)
-    if not sensor:
-        return jsonify({'mensaje': 'Sensor no encontrado'}), 400
-
-    consumo = ConsumoAgua(sensor_id=sensor_id, cantidad=cantidad, timestamp=timestamp)
-    db.session.add(consumo)
-    db.session.commit()
-    print(f"Agua consumida registrada: Sensor ID {sensor_id}, Cantidad {cantidad} litros")
-
-    send_to_websocket('flujoAgua', {'sensor_id': sensor_id, 'cantidad': cantidad, 'timestamp': timestamp})
-
-    return jsonify({'mensaje': 'Consumo de agua registrado exitosamente'}), 201
+    current_app.logger.info(f"Datos recibidos para agua - Sensor ID: {sensor_id}, Cantidad: {cantidad}")
+    return jsonify({'mensaje': 'Datos de agua procesados exitosamente'}), 201

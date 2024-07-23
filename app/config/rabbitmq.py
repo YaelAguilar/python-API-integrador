@@ -1,13 +1,13 @@
 import os
-import time
 import pika
+import time
 import ssl
 
 def get_rabbitmq_connection():
     url = os.getenv('CLOUDAMQP_URL', 'amqps://vumnphwp:04G37mBLNQfL_i6oM1cfMffWzwOOJifD@shrimp.rmq.cloudamqp.com/vumnphwp')
     params = pika.URLParameters(url)
     
-    # Configura SSL
+    # Configura SSL si es necesario
     context = ssl.create_default_context()
     params.ssl_options = pika.SSLOptions(context)
 
@@ -24,7 +24,7 @@ def start_consuming():
         channel = connection.channel()
 
         # Nombres de las colas
-        queue_names = ['flujoAgua', 'nivelAgua', 'nivelFertilizante', 'ph']
+        queue_names = ['flujoAgua']
 
         for queue_name in queue_names:
             channel.queue_declare(queue=queue_name, durable=True)
