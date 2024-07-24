@@ -37,25 +37,29 @@ def register():
 
 
 def login():
-    datos = request.json
-    correo = datos.get('correo')
-    contraseña = datos.get('contraseña')
+    try:
+        datos = request.json
+        correo = datos.get('correo')
+        contraseña = datos.get('contraseña')
 
-    if not correo or not contraseña:
-        return jsonify({'mensaje': 'Datos faltantes'}), 400
+        if not correo or not contraseña:
+            return jsonify({'mensaje': 'Datos faltantes'}), 400
 
-    usuario = User.query.filter_by(correo=correo).first()
+        usuario = User.query.filter_by(correo=correo).first()
 
-    if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
-        access_token = create_access_token(identity={'correo': usuario.correo}, expires_delta=datetime.timedelta(days=7) )#sads
-        return jsonify({'token': access_token, 'usuario': {
-            'id': usuario.id,
-            'email': usuario.correo,
-            'nombre': usuario.nombre,
-            'apellidos': usuario.apellidos
-        }}), 200
-    else:
-        return jsonify({'mensaje': 'Credenciales inválidas'}), 401
+        if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
+            access_token = create_access_token(identity={'correo': usuario.correo}, expires_delta=datetime.timedelta(days=7))
+            return jsonify({'token': access_token, 'usuario': {
+                'id': usuario.id,
+                'correo': usuario.correo,
+                'nombre': usuario.nombre,
+                'apellidos': usuario.apellidos
+            }}), 200
+        else:
+            return jsonify({'mensaje': 'Credenciales inválidas'}), 401
+    except Exception as e:
+        return jsonify({'mensaje': 'Error en el inicio de sesión', 'error': str(e)}), 500
+
 
 @jwt_required()
 def protected_route():
