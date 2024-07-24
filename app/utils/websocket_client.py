@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-WS_SERVER_URL = "https://wss.soursop.lat:3005"
+WS_SERVER_URL = "https://wss.soursop.lat"
 JWT_SECRET = os.getenv('JWT_SECRET', 'jwt_secret_default')
 
 sio = socketio.Client()

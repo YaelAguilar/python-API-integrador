@@ -1,5 +1,3 @@
-# app/config/rabbitmq.py
-
 import os
 import pika
 import time
@@ -9,10 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def get_rabbitmq_connection():
-    url = os.getenv('CLOUDAMQP_URL', 'amqps://vumnphwp:04G37mBLNQfL_i6oM1cfMffWzwOOJifD@shrimp.rmq.cloudamqp.com/vumnphwp')
+    url = os.getenv('CLOUDAMQP_URL')
     params = pika.URLParameters(url)
     
-    # Configura SSL si es necesario
     context = ssl.create_default_context()
     params.ssl_options = pika.SSLOptions(context)
 
@@ -28,7 +25,6 @@ def start_consuming():
         connection = get_rabbitmq_connection()
         channel = connection.channel()
 
-        # Nombres de las colas
         queue_names = ['flujoAgua', 'nivelAgua', 'nivelFertilizante', 'ph']
 
         for queue_name in queue_names:

@@ -58,6 +58,11 @@ def run_rabbitmq_subscriber(app):
         app.logger.info("Iniciando el suscriptor de RabbitMQ")
         start_consuming()
 
+def run_ws_client(app):
+    with app.app_context():
+        from app.utils.websocket_client import connect_to_server
+        connect_to_server()
+
 if __name__ == '__main__':
     app = create_app()
     print("Ejecutando la aplicación")
@@ -67,24 +72,20 @@ if __name__ == '__main__':
         app.thread_rabbitmq = Thread(target=run_rabbitmq_subscriber, args=(app,))
         app.thread_rabbitmq.start()
 
+    if not hasattr(app, 'thread_ws_client'):
+        print("Iniciando el cliente WebSocket")
+        app.thread_ws_client = Thread(target=run_ws_client, args=(app,))
+        app.thread_ws_client.start()
+    
     certfile_path = os.getenv('CERTFILE_PATH')
     keyfile_path = os.getenv('KEYFILE_PATH')
     
     if certfile_path and keyfile_path:
-         context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-         context.load_cert_chain(certfile=certfile_path, keyfile=keyfile_path)
-         app.run(ssl_context=context, host='0.0.0.0', port=3004, debug=True)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context.load_cert_chain(certfile=certfile_path, keyfile=keyfile_path)
+        app.run(ssl_context=context, host='0.0.0.0', port=3004, debug=True)
     else:
         app.run(host='0.0.0.0', port=3004, debug=True)
 
     app.thread_rabbitmq.join()
-
-
-'''
-Recibimos mensaje hay fertilizante:
-    establecemos que el contador de fertilizante es 20.
-
-REcibimos mensaje no hay fertilizante:
-    restamos 1/6 del flujo de agua(dato llamado: flow_rate_lpm) al contador de fertilizante.
-
-'''
+    app.thread_ws_client.join()

@@ -10,7 +10,8 @@ def registrar_agua():
     datos = request.json
     sensor_id = datos.get('sensor_id')
     cantidad = datos.get('cantidad')
-    calcular_cantidad_agua(sensor_id, cantidad)
+    litros_por_minuto = datos.get('litros_por_minuto')
+    calcular_cantidad_agua(sensor_id, cantidad, litros_por_minuto)
     return jsonify({'mensaje': 'Datos de agua procesados exitosamente'}), 201
 
 @sensor_bp.route('/fertilizante', methods=['POST'])
@@ -21,7 +22,6 @@ def registrar_fertilizante():
     calcular_cantidad_fertilizante(sensor_id, cantidad)
     return jsonify({'mensaje': 'Datos de fertilizante procesados exitosamente'}), 201
 
-# Rutas para obtener datos
 @sensor_bp.route('/consumo_agua', methods=['GET'])
 def get_consumo_agua():
     return obtener_consumo_agua()
