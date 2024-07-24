@@ -54,14 +54,11 @@ def get_crecimiento_planta(id):
         return jsonify(planta), 200
     return jsonify({'mensaje': 'Planta no encontrada'}), 404
 
-@sensor_bp.route('/crecimiento_planta', methods=['POST'])
-def create_crecimiento_planta():
-    datos = request.json
-    altura = datos.get('altura')
-    if altura is not None:
-        nueva_planta = CrecimientoPlantaController.create(altura)
-        return jsonify(nueva_planta), 201
-    return jsonify({'mensaje': 'Datos insuficientes'}), 400
+
+@sensor_bp.route('/sensor/crecimiento_planta', methods=['GET'])
+def get_crecimiento_plantas():
+    return jsonify(CrecimientoPlantaController.get_all()), 200
+
 
 @sensor_bp.route('/crecimiento_planta/<int:id>', methods=['PUT'])
 def update_crecimiento_planta(id):
@@ -80,9 +77,7 @@ def delete_crecimiento_planta(id):
         return jsonify({'mensaje': 'Planta eliminada exitosamente'}), 200
     return jsonify({'mensaje': 'Planta no encontrada'}), 404
 
-@sensor_bp.route('/crecimiento_planta/ultimo', methods=['GET'])
+
+@sensor_bp.route('/sensor/crecimiento_planta/ultimo', methods=['GET'])
 def get_ultimo_crecimiento_planta():
-    planta = CrecimientoPlantaController.get_last()
-    if planta:
-        return jsonify(planta), 200
-    return jsonify({'mensaje': 'No se encontraron plantas'}), 404
+    return jsonify(CrecimientoPlantaController.get_last()), 200

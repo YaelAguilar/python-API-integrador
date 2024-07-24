@@ -5,8 +5,12 @@ from app.db import db
 class CrecimientoPlantaController:
     @staticmethod
     def get_all():
-        return [planta.to_dict() for planta in crecimiento_planta.query.all()]
-
+        try:
+            return [planta.to_dict() for planta in crecimiento_planta.query.all()]
+        except Exception as e:
+            print(f"Error fetching growth data: {e}")
+            return []
+        
     @staticmethod
     def get_by_id(id):
         planta = crecimiento_planta.query.get(id)
