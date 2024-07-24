@@ -1,25 +1,25 @@
-from models import CrecimientoPlanta, db
+from app.models import crecimiento_planta, db
 
 class CrecimientoPlantaController:
     @staticmethod
     def get_all():
-        return [planta.to_dict() for planta in CrecimientoPlanta.query.all()]
+        return [planta.to_dict() for planta in crecimiento_planta.query.all()]
 
     @staticmethod
     def get_by_id(id):
-        planta = CrecimientoPlanta.query.get(id)
+        planta = crecimiento_planta.query.get(id)
         return planta.to_dict() if planta else None
 
     @staticmethod
     def create(altura):
-        new_planta = CrecimientoPlanta(altura=altura)
+        new_planta = crecimiento_planta(altura=altura)
         db.session.add(new_planta)
         db.session.commit()
         return new_planta.to_dict()
 
     @staticmethod
     def update(id, altura):
-        planta = CrecimientoPlanta.query.get(id)
+        planta = crecimiento_planta.query.get(id)
         if planta:
             planta.altura = altura
             db.session.commit()
@@ -28,7 +28,7 @@ class CrecimientoPlantaController:
 
     @staticmethod
     def delete(id):
-        planta = CrecimientoPlanta.query.get(id)
+        planta = crecimiento_planta.query.get(id)
         if planta:
             db.session.delete(planta)
             db.session.commit()
@@ -37,5 +37,5 @@ class CrecimientoPlantaController:
 
     @staticmethod
     def get_last():
-        planta = CrecimientoPlanta.query.order_by(CrecimientoPlanta.crecimiento_id.desc()).first()
+        planta = crecimiento_planta.query.order_by(crecimiento_planta.crecimiento_id.desc()).first()
         return planta.to_dict() if planta else None
