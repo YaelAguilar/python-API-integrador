@@ -4,7 +4,7 @@ from app.controllers.fertilizante_controller import calcular_cantidad_fertilizan
 from app.controllers.sensor_data_controller import (
     obtener_consumo_agua, obtener_consumo_fertilizante, obtener_estado_planta, obtener_lecturas_sensor
 )
-from app.controllers.crecimiento_planta_controller import CrecimientoPlantaController
+from app.controllers.crecimiento_controller import CrecimientoPlantaController
 
 sensor_bp = Blueprint('sensor', __name__)
 

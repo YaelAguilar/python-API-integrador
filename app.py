@@ -75,7 +75,7 @@ if __name__ == '__main__':
     if not hasattr(app, 'thread_websocket'):
         print("Iniciando el cliente WebSocket")
         app.thread_websocket = Thread(target=run_websocket_client)
-        app.thread_websocket.start()
+        app.thread_websocket.start()    
 
     certfile_path = os.getenv('CERTFILE_PATH')
     keyfile_path = os.getenv('KEYFILE_PATH')
