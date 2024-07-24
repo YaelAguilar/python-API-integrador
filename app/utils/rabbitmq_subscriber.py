@@ -1,13 +1,13 @@
+from threading import Thread
 import pika
 import json
 import time
+import random
 from app.config.rabbitmq import get_rabbitmq_connection
 from flask import current_app
 from app.db import db
 from app.models.consumo_agua import ConsumoAgua
-from app.models.consumo_fertilizante import ConsumoFertilizante
 from app.models.estado_planta import EstadoPlanta
-from app.models.lectura_sensor import LecturaSensor
 from app.models.sensor import Sensor
 
 def callback(ch, method, properties, body):
@@ -18,30 +18,13 @@ def callback(ch, method, properties, body):
 
         # Procesar flujo de agua
         if 'litrosPorMinuto' in data and 'totalConsumido' in data:
-            sensor = Sensor.query.filter_by(tipo="Sensor_agua").first()
+            sensor = Sensor.query.filter_by(tipo="sensor_agua").first()
             if sensor:
-                consumo_agua = ConsumoAgua(sensor_id=sensor.sensor_id, cantidad=data['totalConsumido'])
+                consumo_agua = ConsumoAgua(sensor_id=sensor.sensor_id, cantidad=data['totalConsumido'], litros_por_minuto=data['litrosPorMinuto'])
                 db.session.add(consumo_agua)
                 db.session.commit()
                 current_app.logger.info(f"Registro guardado en la tabla ConsumoAgua: {data}")
-
-        # Procesar nivel de agua
-        elif 'sensorState' in data:
-            sensor = Sensor.query.filter_by(tipo="Sensor_agua").first()
-            if sensor:
-                lectura_sensor = LecturaSensor(sensor_id=sensor.sensor_id, valor=1 if data['sensorState'] == 'hay agua' else 0, unidad='estado')
-                db.session.add(lectura_sensor)
-                db.session.commit()
-                current_app.logger.info(f"Registro guardado en la tabla LecturaSensor para nivelAgua: {data}")
-
-        # Procesar nivel de fertilizante
-        elif 'sensorState' in data:
-            sensor = Sensor.query.filter_by(tipo="sensor_fertilizante").first()
-            if sensor:
-                lectura_sensor = LecturaSensor(sensor_id=sensor.sensor_id, valor=1 if data['sensorState'] == 'hay fertilizante' else 0, unidad='estado')
-                db.session.add(lectura_sensor)
-                db.session.commit()
-                current_app.logger.info(f"Registro guardado en la tabla LecturaSensor para nivelFertilizante: {data}")
+                print(f"Datos simulados guardados en ConsumoAgua: {data}")
 
         # Procesar pH
         elif 'humedad' in data and 'temperatura' in data and 'conductividad' in data:
@@ -49,20 +32,47 @@ def callback(ch, method, properties, body):
             db.session.add(estado_planta)
             db.session.commit()
             current_app.logger.info(f"Registro guardado en la tabla EstadoPlanta: {data}")
+            print(f"Datos simulados guardados en EstadoPlanta: {data}")
 
     except json.JSONDecodeError:
         current_app.logger.error(f"Error al decodificar el JSON: {body}")
     except Exception as e:
         current_app.logger.error(f"Error al procesar el mensaje: {e}")
 
+def simulate_data():
+    while True:
+        try:
+            data_flujo_agua = {
+                'litrosPorMinuto': random.uniform(0.1, 10.0),
+                'totalConsumido': random.uniform(0.1, 100.0)
+            }
+            data_ph = {
+                'humedad': random.uniform(30.0, 70.0),
+                'temperatura': random.uniform(10.0, 35.0),
+                'conductividad': random.uniform(0.1, 5.0)
+            }
+            print(f"Simulando datos de flujo de agua: {data_flujo_agua}")
+            print(f"Simulando datos de pH: {data_ph}")
+
+            # Guardar datos simulados en la base de datos
+            callback(None, None, None, json.dumps(data_flujo_agua))
+            callback(None, None, None, json.dumps(data_ph))
+
+            time.sleep(10)
+
+        except Exception as e:
+            print(f"Error al generar datos simulados: {e}")
+
 def start_consuming():
     current_app.logger.info("Iniciando consumo de RabbitMQ")
+    simulate_thread = Thread(target=simulate_data)
+    simulate_thread.start()
     while True:
         try:
             connection = get_rabbitmq_connection()
             channel = connection.channel()
 
-            queue_names = ['flujoAgua', 'nivelAgua', 'nivelFertilizante', 'ph']
+            queue_names = ['flujoAgua', 'ph']
 
             for queue_name in queue_names:
                 current_app.logger.info(f"Suscribiéndose a la cola: {queue_name}")

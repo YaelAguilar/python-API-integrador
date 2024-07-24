@@ -6,3 +6,5 @@ class LecturaSensor(db.Model):
     sensor_id = db.Column(db.Integer, db.ForeignKey('sensores.sensor_id'), nullable=False)
     valor = db.Column(db.Float, nullable=False)
     unidad = db.Column(db.String(20), nullable=False)
+    
+    sensor = db.relationship('Sensor', back_populates='lecturas')

@@ -6,6 +6,6 @@ class Sensor(db.Model):
     tipo = db.Column(db.String(50), nullable=False)
     ubicacion = db.Column(db.String(100), nullable=False)
 
-    lecturas = db.relationship('LecturaSensor', backref='sensor', lazy=True)
-    consumos_agua = db.relationship('ConsumoAgua', backref='sensor', lazy=True)
-    consumos_fertilizante = db.relationship('ConsumoFertilizante', backref='sensor', lazy=True)
+    lecturas = db.relationship('LecturaSensor', back_populates='sensor', lazy=True)
+    consumos_agua = db.relationship('ConsumoAgua', back_populates='sensor', lazy=True)
+    consumos_fertilizante = db.relationship('ConsumoFertilizante', back_populates='sensor', lazy=True)

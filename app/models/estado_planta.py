@@ -7,4 +7,8 @@ class EstadoPlanta(db.Model):
     conductividad = db.Column(db.Float, nullable=False)
     humedad = db.Column(db.Float, nullable=False)
 
-    estimativos = db.relationship('EstimativoProduccion', backref='estado', lazy=True)
+# Asegúrate de que `EstimativoProduccion` esté definido antes de definir la relación
+from app.models.estimativo_produccion import EstimativoProduccion
+
+# Definición de la relación después de importar `EstimativoProduccion`
+EstadoPlanta.estimativos = db.relationship('EstimativoProduccion', backref='estado', lazy=True)

@@ -5,21 +5,33 @@ from app.models.estado_planta import EstadoPlanta
 from app.models.lectura_sensor import LecturaSensor
 
 def obtener_consumo_agua():
-    consumos = ConsumoAgua.query.all()
-    resultados = [{'consumo_id': c.consumo_id, 'sensor_id': c.sensor_id, 'cantidad': c.cantidad} for c in consumos]
-    return jsonify(resultados), 200
+    try:
+        consumos = ConsumoAgua.query.all()
+        datos = [{"consumo_id": consumo.consumo_id, "sensor_id": consumo.sensor_id, "cantidad": consumo.cantidad, "litros_por_minuto": consumo.litros_por_minuto} for consumo in consumos]
+        return jsonify(datos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def obtener_consumo_fertilizante():
-    consumos = ConsumoFertilizante.query.all()
-    resultados = [{'consumo_id': c.consumo_id, 'sensor_id': c.sensor_id, 'cantidad': c.cantidad} for c in consumos]
-    return jsonify(resultados), 200
+    try:
+        consumos = ConsumoFertilizante.query.all()
+        datos = [{"consumo_id": consumo.consumo_id, "sensor_id": consumo.sensor_id, "cantidad": consumo.cantidad} for consumo in consumos]
+        return jsonify(datos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def obtener_estado_planta():
-    estados = EstadoPlanta.query.all()
-    resultados = [{'estado_id': e.estado_id, 'temperatura': e.temperatura, 'conductividad': e.conductividad, 'humedad': e.humedad} for e in estados]
-    return jsonify(resultados), 200
+    try:
+        estados = EstadoPlanta.query.all()
+        datos = [{"estado_id": estado.estado_id, "humedad": estado.humedad, "temperatura": estado.temperatura, "conductividad": estado.conductividad} for estado in estados]
+        return jsonify(datos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def obtener_lecturas_sensor():
-    lecturas = LecturaSensor.query.all()
-    resultados = [{'lectura_id': l.lectura_id, 'sensor_id': l.sensor_id, 'valor': l.valor, 'unidad': l.unidad} for l in lecturas]
-    return jsonify(resultados), 200
+    try:
+        lecturas = LecturaSensor.query.all()
+        datos = [{"lectura_id": lectura.lectura_id, "sensor_id": lectura.sensor_id, "valor": lectura.valor, "unidad": lectura.unidad} for lectura in lecturas]
+        return jsonify(datos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

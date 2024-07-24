@@ -1,3 +1,5 @@
+# app/config/rabbitmq.py
+
 import os
 import pika
 import time
