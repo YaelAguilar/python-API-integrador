@@ -15,12 +15,11 @@ fertilizante_contador = 20
 
 def callback(ch, method, properties, body):
     global fertilizante_contador
-    current_app.logger.info(f"Mensaje recibido: {body}")
+    current_app.logger.info(f"Mensaje recibido de RabbitMQ: {body}")
     try:
         data = json.loads(body)
         current_app.logger.info(f"Datos decodificados: {data}")
 
-        # Procesar flujo de agua
         if 'litrosPorMinuto' in data and 'totalConsumido' in data:
             sensor = Sensor.query.filter_by(tipo="sensor_agua").first()
             if sensor:
@@ -30,7 +29,6 @@ def callback(ch, method, properties, body):
                 current_app.logger.info(f"Registro guardado en la tabla ConsumoAgua: {data}")
                 print(f"Datos guardados en ConsumoAgua: {data}")
 
-        # Procesar nivel de fertilizante
         elif 'sensorState' in data:
             sensor = Sensor.query.filter_by(tipo="sensor_fertilizante").first()
             if sensor:
@@ -50,20 +48,22 @@ def callback(ch, method, properties, body):
                     current_app.logger.info(f"Registro guardado en la tabla ConsumoFertilizante: {data}")
                     print(f"Datos guardados en ConsumoFertilizante: {data}")
 
-        # Procesar pH y enviar a WebSocket
         elif 'humedad' in data and 'temperatura' in data and 'conductividad' in data:
-            estado_planta = EstadoPlanta(humedad=data['humedad'], temperatura=data['temperatura'], conductividad=data['conductividad'])
-            db.session.add(estado_planta)
-            db.session.commit()
-            current_app.logger.info(f"Registro guardado en la tabla EstadoPlanta: {data}")
-            print(f"Datos guardados en EstadoPlanta: {data}")
-            # Enviar datos a WebSocket
-            send_to_websocket('ph', data)  # Envío de datos al cliente WebSocket
+            sensor = Sensor.query.filter_by(tipo="sensor_ph").first()
+            if sensor:
+                estado_planta = EstadoPlanta(sensor_id=sensor.sensor_id, humedad=data['humedad'], temperatura=data['temperatura'], conductividad=data['conductividad'])
+                db.session.add(estado_planta)
+                db.session.commit()
+                current_app.logger.info(f"Registro guardado en la tabla EstadoPlanta: {data}")
+                print(f"Datos guardados en EstadoPlanta: {data}")
+                send_to_websocket('ph', data)
 
     except json.JSONDecodeError:
         current_app.logger.error(f"Error al decodificar el JSON: {body}")
+        print(f"Error al decodificar el JSON: {body}")
     except Exception as e:
         current_app.logger.error(f"Error al procesar el mensaje: {e}")
+        print(f"Error al procesar el mensaje: {e}")
 
 def start_consuming():
     current_app.logger.info("Iniciando consumo de RabbitMQ")

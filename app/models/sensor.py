@@ -9,3 +9,4 @@ class Sensor(db.Model):
     lecturas = db.relationship('LecturaSensor', back_populates='sensor', lazy=True)
     consumos_agua = db.relationship('ConsumoAgua', back_populates='sensor', lazy=True)
     consumos_fertilizante = db.relationship('ConsumoFertilizante', back_populates='sensor', lazy=True)
+    estados_planta = db.relationship('EstadoPlanta', back_populates='sensor', lazy=True)
