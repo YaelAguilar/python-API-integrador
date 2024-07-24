@@ -1,4 +1,6 @@
-from app.models import crecimiento_planta, db
+from app.models import crecimiento_planta
+from app.db import db
+
 
 class CrecimientoPlantaController:
     @staticmethod
