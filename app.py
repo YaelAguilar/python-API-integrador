@@ -58,11 +58,6 @@ def run_rabbitmq_subscriber(app):
         app.logger.info("Iniciando el suscriptor de RabbitMQ")
         start_consuming()
 
-def run_simulation(app):
-    with app.app_context():
-        from app.utils.rabbitmq_subscriber import simulate_data
-        simulate_data()
-
 if __name__ == '__main__':
     app = create_app()
     print("Ejecutando la aplicación")
@@ -71,11 +66,6 @@ if __name__ == '__main__':
         print("Iniciando el hilo del suscriptor de RabbitMQ")
         app.thread_rabbitmq = Thread(target=run_rabbitmq_subscriber, args=(app,))
         app.thread_rabbitmq.start()
-
-    if not hasattr(app, 'thread_simulation'):
-        print("Iniciando el hilo de simulación de datos")
-        app.thread_simulation = Thread(target=run_simulation, args=(app,))
-        app.thread_simulation.start()
 
     certfile_path = os.getenv('CERTFILE_PATH')
     keyfile_path = os.getenv('KEYFILE_PATH')
@@ -88,4 +78,13 @@ if __name__ == '__main__':
         app.run(host='0.0.0.0', port=3004, debug=True)
 
     app.thread_rabbitmq.join()
-    app.thread_simulation.join()
+
+
+'''
+Recibimos mensaje hay fertilizante:
+    establecemos que el contador de fertilizante es 20.
+
+REcibimos mensaje no hay fertilizante:
+    restamos 1/6 del flujo de agua(dato llamado: flow_rate_lpm) al contador de fertilizante.
+
+'''
