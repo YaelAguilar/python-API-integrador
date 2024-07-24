@@ -36,13 +36,13 @@ def login():
     datos = request.json
     correo = datos.get('correo')
     contraseña = datos.get('contraseña')
-
-    if not correo or not contraseña:
+    try:
+     if not correo or not contraseña:
         return jsonify({'mensaje': 'Datos faltantes'}), 400
 
-    usuario = User.query.filter_by(correo=correo).first()
+     usuario = User.query.filter_by(correo=correo).first()
 
-    if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
+     if usuario and check_password_hash(usuario.contraseña_hash, contraseña):
         access_token = create_access_token(identity={'correo': usuario.correo}, expires_delta=datetime.timedelta(days=7) )#sads
         return jsonify({'token': access_token, 'usuario': {
             'id': usuario.id,
@@ -50,9 +50,15 @@ def login():
             'nombre': usuario.nombre,
             'apellidos': usuario.apellidos
         }}), 200
-    else:
+     else:
         return jsonify({'mensaje': 'Credenciales inválidas'}), 401
+    except TypeError as e:
+        print(f"Error: Tipo de dato incorrecto. {e}")
+        return jsonify({"messages":e}),500
 
+  
+    finally:
+        print("Operación completada.")
 @jwt_required()
 def protected_route():
     usuario_actual = get_jwt_identity()
