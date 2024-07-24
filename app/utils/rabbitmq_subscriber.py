@@ -58,7 +58,7 @@ def callback(ch, method, properties, body):
             current_app.logger.info(f"Registro guardado en la tabla EstadoPlanta: {data}")
             print(f"Datos guardados en EstadoPlanta: {data}")
             # Enviar datos a WebSocket
-            send_to_websocket('ph', data)
+            send_to_websocket('ph', data)  # Envío de datos al cliente WebSocket
 
     except json.JSONDecodeError:
         current_app.logger.error(f"Error al decodificar el JSON: {body}")

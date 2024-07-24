@@ -5,9 +5,11 @@ import jwt
 import os
 from dotenv import load_dotenv
 
+from app.config.rabbitmq import get_rabbitmq_connection
+
 load_dotenv()
 
-WS_SERVER_URL = "https://wss.soursop.lat"
+WS_SERVER_URL = "https://wss.soursop.lat:3005"
 JWT_SECRET = os.getenv('JWT_SECRET', 'jwt_secret_default')
 
 sio = socketio.Client()
@@ -63,5 +65,22 @@ def connect_error(data):
 def disconnect():
     print("Desconectado del servidor WebSocket")
 
+def start_listening_to_rabbitmq():
+    connection = get_rabbitmq_connection()
+    channel = connection.channel()
+
+    def callback(ch, method, properties, body):
+        data = json.loads(body)
+        print(f"Datos recibidos de RabbitMQ: {data}")
+        send_to_websocket(method.routing_key, data)
+
+    channel.basic_consume(queue='flujoAgua', on_message_callback=callback, auto_ack=True)
+    channel.basic_consume(queue='nivelAgua', on_message_callback=callback, auto_ack=True)
+    channel.basic_consume(queue='nivelFertilizante', on_message_callback=callback, auto_ack=True)
+    channel.basic_consume(queue='ph', on_message_callback=callback, auto_ack=True)
+    print("Esperando mensajes de RabbitMQ...")
+    channel.start_consuming()
+
 if __name__ == "__main__":
     connect_to_server()
+    start_listening_to_rabbitmq()

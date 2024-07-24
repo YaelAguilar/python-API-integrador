@@ -58,10 +58,10 @@ def run_rabbitmq_subscriber(app):
         app.logger.info("Iniciando el suscriptor de RabbitMQ")
         start_consuming()
 
-def run_ws_client(app):
-    with app.app_context():
-        from app.utils.websocket_client import connect_to_server
-        connect_to_server()
+def run_websocket_client():
+    from app.utils.websocket_client import connect_to_server, start_listening_to_rabbitmq
+    connect_to_server()
+    start_listening_to_rabbitmq()
 
 if __name__ == '__main__':
     app = create_app()
@@ -72,11 +72,11 @@ if __name__ == '__main__':
         app.thread_rabbitmq = Thread(target=run_rabbitmq_subscriber, args=(app,))
         app.thread_rabbitmq.start()
 
-    if not hasattr(app, 'thread_ws_client'):
+    if not hasattr(app, 'thread_websocket'):
         print("Iniciando el cliente WebSocket")
-        app.thread_ws_client = Thread(target=run_ws_client, args=(app,))
-        app.thread_ws_client.start()
-    
+        app.thread_websocket = Thread(target=run_websocket_client)
+        app.thread_websocket.start()
+
     certfile_path = os.getenv('CERTFILE_PATH')
     keyfile_path = os.getenv('KEYFILE_PATH')
     
@@ -88,4 +88,4 @@ if __name__ == '__main__':
         app.run(host='0.0.0.0', port=3004, debug=True)
 
     app.thread_rabbitmq.join()
-    app.thread_ws_client.join()
+    app.thread_websocket.join()
