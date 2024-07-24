@@ -1,11 +1,8 @@
-# app/__init__.py
-
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_migrate import Migrate
 from dotenv import load_dotenv
-from threading import Thread
 import logging
 import pymysql
 pymysql.install_as_MySQLdb()
