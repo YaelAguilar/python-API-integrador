@@ -1,14 +1,18 @@
-import logging
-import pymysql
-pymysql.install_as_MySQLdb()
+# app/__init__.py
 
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_migrate import Migrate
 from dotenv import load_dotenv
+from threading import Thread
+import logging
+import pymysql
+pymysql.install_as_MySQLdb()
+
 from app.config.config import Config
 from app.db import db
+from app.config.rabbitmq import start_consuming
 
 load_dotenv()
 
@@ -48,3 +52,8 @@ def create_app():
     app.logger.addHandler(handler)
 
     return app
+
+def run_rabbitmq_subscriber(app):
+    with app.app_context():
+        app.logger.info("Iniciando el suscriptor de RabbitMQ")
+        start_consuming()
