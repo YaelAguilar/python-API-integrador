@@ -30,7 +30,6 @@ if __name__ == '__main__':
         print("Iniciando el cliente WebSocket")
         app.thread_websocket = Thread(target=run_websocket_client)
         app.thread_websocket.start()    
-    
     certfile_path = os.getenv('CERTFILE_PATH')
     keyfile_path = os.getenv('KEYFILE_PATH')
     
@@ -38,7 +37,7 @@ if __name__ == '__main__':
         context = ssl.SSLContext(ssl.PROTOCOL_TLS)
         context.load_cert_chain(certfile=certfile_path, keyfile=keyfile_path)
         app.run(ssl_context=context, host='0.0.0.0', port=3004, debug=True)
-    else:
+    else:  
         app.run(host='0.0.0.0', port=3004, debug=True)
 
     app.thread_rabbitmq.join()

@@ -3,12 +3,8 @@ import json
 import time
 from flask import current_app
 from app.config.rabbitmq import get_rabbitmq_connection
-from app.db import db
-from app.models.consumo_agua import ConsumoAgua
-from app.models.consumo_fertilizante import ConsumoFertilizante
-from app.models.estado_planta import EstadoPlanta
 from app.models.sensor import Sensor
-from app.utils.websocket_client import send_to_websocket  # Importa la función de envío
+from app.utils.websocket_client import send_to_websocket 
 
 # Inicializar contador de fertilizante
 fertilizante_contador = 20
@@ -23,39 +19,39 @@ def callback(ch, method, properties, body):
         if 'litrosPorMinuto' in data and 'totalConsumido' in data:
             sensor = Sensor.query.filter_by(tipo="sensor_agua").first()
             if sensor:
-                consumo_agua = ConsumoAgua(sensor_id=sensor.sensor_id, cantidad=data['totalConsumido'], litros_por_minuto=data['litrosPorMinuto'])
-                db.session.add(consumo_agua)
-                db.session.commit()
-                current_app.logger.info(f"Registro guardado en la tabla ConsumoAgua: {data}")
-                print(f"Datos guardados en ConsumoAgua: {data}")
+                # consumo_agua = ConsumoAgua(sensor_id=sensor.sensor_id, cantidad=data['totalConsumido'], litros_por_minuto=data['litrosPorMinuto'])
+                # db.session.add(consumo_agua)
+                # db.session.commit()
+                current_app.logger.info(f"Datos de ConsumoAgua recibidos: {data}")
+                print(f"Datos de ConsumoAgua recibidos: {data}")
 
         elif 'sensorState' in data:
             sensor = Sensor.query.filter_by(tipo="sensor_fertilizante").first()
             if sensor:
                 if data['sensorState'] == 'hay fertilizante':
                     fertilizante_contador = 20
-                    consumo_fertilizante = ConsumoFertilizante(sensor_id=sensor.sensor_id, cantidad=fertilizante_contador)
-                    db.session.add(consumo_fertilizante)
-                    db.session.commit()
-                    current_app.logger.info(f"Registro guardado en la tabla ConsumoFertilizante: {data}")
-                    print(f"Datos guardados en ConsumoFertilizante: {data}")
+                    # consumo_fertilizante = ConsumoFertilizante(sensor_id=sensor.sensor_id, cantidad=fertilizante_contador)
+                    # db.session.add(consumo_fertilizante)
+                    # db.session.commit()
+                    current_app.logger.info(f"Datos de ConsumoFertilizante recibidos: {data}")
+                    print(f"Datos de ConsumoFertilizante recibidos: {data}")
 
                 elif data['sensorState'] == 'no hay fertilizante' and 'flow_rate_lpm' in data:
                     fertilizante_contador -= (data['flow_rate_lpm'] / 6)
-                    consumo_fertilizante = ConsumoFertilizante(sensor_id=sensor.sensor_id, cantidad=fertilizante_contador)
-                    db.session.add(consumo_fertilizante)
-                    db.session.commit()
-                    current_app.logger.info(f"Registro guardado en la tabla ConsumoFertilizante: {data}")
-                    print(f"Datos guardados en ConsumoFertilizante: {data}")
+                    # consumo_fertilizante = ConsumoFertilizante(sensor_id=sensor.sensor_id, cantidad=fertilizante_contador)
+                    # db.session.add(consumo_fertilizante)
+                    # db.session.commit()
+                    current_app.logger.info(f"Datos de ConsumoFertilizante recibidos: {data}")
+                    print(f"Datos de ConsumoFertilizante recibidos: {data}")
 
         elif 'humedad' in data and 'temperatura' in data and 'conductividad' in data:
             sensor = Sensor.query.filter_by(tipo="sensor_ph").first()
             if sensor:
-                estado_planta = EstadoPlanta(sensor_id=sensor.sensor_id, humedad=data['humedad'], temperatura=data['temperatura'], conductividad=data['conductividad'])
-                db.session.add(estado_planta)
-                db.session.commit()
-                current_app.logger.info(f"Registro guardado en la tabla EstadoPlanta: {data}")
-                print(f"Datos guardados en EstadoPlanta: {data}")
+                # estado_planta = EstadoPlanta(sensor_id=sensor.sensor_id, humedad=data['humedad'], temperatura=data['temperatura'], conductividad=data['conductividad'])
+                # db.session.add(estado_planta)
+                # db.session.commit()
+                current_app.logger.info(f"Datos de EstadoPlanta recibidos: {data}")
+                print(f"Datos de EstadoPlanta recibidos: {data}")
                 send_to_websocket('ph', data)
 
     except json.JSONDecodeError:
