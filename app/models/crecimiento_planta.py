@@ -2,11 +2,11 @@ from app.db import db
 
 class CrecimientoPlanta(db.Model):
     __tablename__ = 'crecimiento_planta'
-    crecimiento_id = db.Column(db.Integer, primary_key=True)
-    altura = db.Column(db.Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    altura = db.Column(db.Float)
 
     def to_dict(self):
         return {
-            'crecimiento_id': self.crecimiento_id,
+            'id': self.id,
             'altura': self.altura
         }

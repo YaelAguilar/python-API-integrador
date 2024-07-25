@@ -33,6 +33,7 @@ def create_app():
         from app.models.consumo_fertilizante import ConsumoFertilizante
         from app.models.estado_planta import EstadoPlanta
         from app.models.estimativo_produccion import EstimativoProduccion
+        from app.models.crecimiento_planta import CrecimientoPlanta
 
         db.create_all()
 

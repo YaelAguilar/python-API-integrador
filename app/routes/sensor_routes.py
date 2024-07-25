@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.agua_controller import calcular_cantidad_agua
 from app.controllers.fertilizante_controller import calcular_cantidad_fertilizante
+from app.controllers.crecimiento_controller import CrecimientoPlantaController
 from app.controllers.sensor_data_controller import (
     obtener_consumo_agua, obtener_consumo_fertilizante, obtener_estado_planta, obtener_lecturas_sensor
 )
-from app.controllers.crecimiento_controller import CrecimientoPlantaController
 
 sensor_bp = Blueprint('sensor', __name__)
 
@@ -41,12 +41,6 @@ def get_estado_planta():
 def get_lecturas_sensor():
     return obtener_lecturas_sensor()
 
-# Rutas para el controlador CrecimientoPlantaController
-
-@sensor_bp.route('/crecimiento_planta', methods=['GET'])
-def get_crecimiento_plantas():
-    return jsonify(CrecimientoPlantaController.get_all()), 200
-
 @sensor_bp.route('/crecimiento_planta/<int:id>', methods=['GET'])
 def get_crecimiento_planta(id):
     planta = CrecimientoPlantaController.get_by_id(id)
@@ -80,7 +74,6 @@ def delete_crecimiento_planta(id):
         return jsonify({'mensaje': 'Planta eliminada exitosamente'}), 200
     return jsonify({'mensaje': 'Planta no encontrada'}), 404
 
-
-@sensor_bp.route('/sensor/crecimiento_planta/ultimo', methods=['GET'])
+@sensor_bp.route('/crecimiento_planta/ultimo', methods=['GET'])
 def get_ultimo_crecimiento_planta():
     return jsonify(CrecimientoPlantaController.get_last()), 200
