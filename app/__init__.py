@@ -1,14 +1,16 @@
+import logging
+import threading
 from flask import Flask
-from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
-import logging
 import pymysql
+
 pymysql.install_as_MySQLdb()
 
-from app.config.config import Config
 from app.db import db
+from app.config.config import Config
 from app.config.rabbitmq import start_consuming
 
 load_dotenv()
@@ -19,7 +21,7 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-
+    
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
