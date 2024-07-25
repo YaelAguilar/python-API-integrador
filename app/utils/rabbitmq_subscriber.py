@@ -1,87 +1,38 @@
-import pika
-import json
-import time
-from flask import current_app
-from app.config.rabbitmq import get_rabbitmq_connection
-from app.models.sensor import Sensor
-from app.utils.websocket_client import send_to_websocket 
+import ssl
+from flask import Flask
+from dotenv import load_dotenv
+import logging
+import os
+from threading import Thread
+import pymysql
+pymysql.install_as_MySQLdb()
+from app import create_app, run_rabbitmq_subscriber
+load_dotenv()
+def run_websocket_client():
+    from app.utils.websocket_client import connect_to_server, start_listening_to_rabbitmq
+    connect_to_server()
+    start_listening_to_rabbitmq()
+if __name__ == '__main__':
+    app = create_app()
+    print("Ejecutando la aplicación")
+    if not hasattr(app, 'thread_rabbitmq'):
+        print("Iniciando el hilo del suscriptor de RabbitMQ")
+        app.thread_rabbitmq = Thread(target=run_rabbitmq_subscriber, args=(app,))
+        app.thread_rabbitmq.start()
+    if not hasattr(app, 'thread_websocket'):
+        print("Iniciando el cliente WebSocket")
+        app.thread_websocket = Thread(target=run_websocket_client)
+        app.thread_websocket.start()    
 
-# Inicializar contador de fertilizante
-fertilizante_contador = 20
+    certfile_path = os.getenv('CERTFILE_PATH')
+    keyfile_path = os.getenv('KEYFILE_PATH')
 
-def callback(ch, method, properties, body):
-    global fertilizante_contador
-    current_app.logger.info(f"Mensaje recibido de RabbitMQ: {body}")
-    try:
-        data = json.loads(body)
-        current_app.logger.info(f"Datos decodificados: {data}")
+    if certfile_path and keyfile_path:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context.load_cert_chain(certfile=certfile_path, keyfile=keyfile_path)
+        app.run(ssl_context=context, host='0.0.0.0', port=3004, debug=True)
+    else:
+        app.run(host='0.0.0.0', port=3004, debug=True)
 
-        if 'litrosPorMinuto' in data and 'totalConsumido' in data:
-            sensor = Sensor.query.filter_by(tipo="sensor_agua").first()
-            if sensor:
-                # consumo_agua = ConsumoAgua(sensor_id=sensor.sensor_id, cantidad=data['totalConsumido'], litros_por_minuto=data['litrosPorMinuto'])
-                # db.session.add(consumo_agua)
-                # db.session.commit()
-                current_app.logger.info(f"Datos de ConsumoAgua recibidos: {data}")
-                print(f"Datos de ConsumoAgua recibidos: {data}")
-
-        elif 'sensorState' in data:
-            sensor = Sensor.query.filter_by(tipo="sensor_fertilizante").first()
-            if sensor:
-                if data['sensorState'] == 'hay fertilizante':
-                    fertilizante_contador = 20
-                    # consumo_fertilizante = ConsumoFertilizante(sensor_id=sensor.sensor_id, cantidad=fertilizante_contador)
-                    # db.session.add(consumo_fertilizante)
-                    # db.session.commit()
-                    current_app.logger.info(f"Datos de ConsumoFertilizante recibidos: {data}")
-                    print(f"Datos de ConsumoFertilizante recibidos: {data}")
-
-                elif data['sensorState'] == 'no hay fertilizante' and 'flow_rate_lpm' in data:
-                    fertilizante_contador -= (data['flow_rate_lpm'] / 6)
-                    # consumo_fertilizante = ConsumoFertilizante(sensor_id=sensor.sensor_id, cantidad=fertilizante_contador)
-                    # db.session.add(consumo_fertilizante)
-                    # db.session.commit()
-                    current_app.logger.info(f"Datos de ConsumoFertilizante recibidos: {data}")
-                    print(f"Datos de ConsumoFertilizante recibidos: {data}")
-
-        elif 'humedad' in data and 'temperatura' in data and 'conductividad' in data:
-            sensor = Sensor.query.filter_by(tipo="sensor_ph").first()
-            if sensor:
-                # estado_planta = EstadoPlanta(sensor_id=sensor.sensor_id, humedad=data['humedad'], temperatura=data['temperatura'], conductividad=data['conductividad'])
-                # db.session.add(estado_planta)
-                # db.session.commit()
-                current_app.logger.info(f"Datos de EstadoPlanta recibidos: {data}")
-                print(f"Datos de EstadoPlanta recibidos: {data}")
-                send_to_websocket('ph', data)
-
-    except json.JSONDecodeError:
-        current_app.logger.error(f"Error al decodificar el JSON: {body}")
-        print(f"Error al decodificar el JSON: {body}")
-    except Exception as e:
-        current_app.logger.error(f"Error al procesar el mensaje: {e}")
-        print(f"Error al procesar el mensaje: {e}")
-
-def start_consuming():
-    current_app.logger.info("Iniciando consumo de RabbitMQ")
-    while True:
-        try:
-            connection = get_rabbitmq_connection()
-            channel = connection.channel()
-
-            queue_names = ['flujoAgua', 'nivelFertilizante', 'ph']
-
-            for queue_name in queue_names:
-                current_app.logger.info(f"Suscribiéndose a la cola: {queue_name}")
-                channel.queue_declare(queue=queue_name, durable=True)
-                channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-
-            current_app.logger.info(' [*] Esperando por mensajes. Para salir presiona CTRL+C')
-            channel.start_consuming()
-        except pika.exceptions.AMQPConnectionError as e:
-            current_app.logger.error(f"Error de conexión a RabbitMQ: {e}")
-            current_app.logger.info("Reintentando en 5 segundos...")
-            time.sleep(5)
-        except Exception as e:
-            current_app.logger.error(f"Ocurrió un error inesperado: {e}")
-            current_app.logger.info("Reintentando en 5 segundos...")
-            time.sleep(5)
+    app.thread_rabbitmq.join()
+app.thread_websocket.join()
