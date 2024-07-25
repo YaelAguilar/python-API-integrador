@@ -1,4 +1,5 @@
 from app.models.crecimiento_planta import CrecimientoPlanta
+
 from app.db import db
 
 class CrecimientoPlantaController:
@@ -42,5 +43,5 @@ class CrecimientoPlantaController:
 
     @staticmethod
     def get_last():
-        planta = CrecimientoPlanta.query.order_by(CrecimientoPlanta.id.desc()).first()
+        planta = CrecimientoPlanta.query.order_by(CrecimientoPlanta.crecimiento_id.desc()).first()
         return planta.to_dict() if planta else None

@@ -41,6 +41,11 @@ def get_estado_planta():
 def get_lecturas_sensor():
     return obtener_lecturas_sensor()
 
+@sensor_bp.route('/crecimiento_planta', methods=['GET'])
+def get_all_crecimiento_planta():
+    plantas = CrecimientoPlantaController.get_all()
+    return jsonify(plantas), 200
+
 @sensor_bp.route('/crecimiento_planta/<int:id>', methods=['GET'])
 def get_crecimiento_planta(id):
     planta = CrecimientoPlantaController.get_by_id(id)
@@ -74,6 +79,6 @@ def delete_crecimiento_planta(id):
         return jsonify({'mensaje': 'Planta eliminada exitosamente'}), 200
     return jsonify({'mensaje': 'Planta no encontrada'}), 404
 
-@sensor_bp.route('/crecimiento_planta/ultimo', methods=['GET'])
+@sensor_bp.route('/sensor/crecimiento_planta/ultimo', methods=['GET'])
 def get_ultimo_crecimiento_planta():
     return jsonify(CrecimientoPlantaController.get_last()), 200
