@@ -29,12 +29,27 @@ def create_app():
 
     @app.after_request
     def apply_security_headers(response):
-        # CSP
-        response.headers['Content-Security-Policy'] = "default-src 'self';"
-        # HSTS
+        # Content Security Policy (CSP)
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' https://wss.soursop.lat; "
+            "style-src 'self' 'unsafe-inline' https://wss.soursop.lat; "
+            "img-src 'self' data:; "
+            "connect-src 'self' https://wss.soursop.lat; "
+            "font-src 'self'; "
+            "frame-src 'none'; "
+            "object-src 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+        )
+        # HTTP Strict Transport Security (HSTS)
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         # X-Content-Type-Options
         response.headers['X-Content-Type-Options'] = 'nosniff'
+        # Cache-Control
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
         return response
 
     with app.app_context():
