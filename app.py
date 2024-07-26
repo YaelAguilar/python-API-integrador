@@ -1,9 +1,9 @@
 import ssl
-from flask import Flask
-from dotenv import load_dotenv
 import logging
 import os
 from threading import Thread
+from flask import Flask
+from dotenv import load_dotenv
 import pymysql
 
 pymysql.install_as_MySQLdb()
@@ -30,6 +30,7 @@ if __name__ == '__main__':
         print("Iniciando el cliente WebSocket")
         app.thread_websocket = Thread(target=run_websocket_client)
         app.thread_websocket.start()    
+
     certfile_path = os.getenv('CERTFILE_PATH')
     keyfile_path = os.getenv('KEYFILE_PATH')
     

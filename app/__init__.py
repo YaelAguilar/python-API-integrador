@@ -25,7 +25,17 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins": ["https://wss.soursop.lat"]}})
+
+    @app.after_request
+    def apply_security_headers(response):
+        # CSP
+        response.headers['Content-Security-Policy'] = "default-src 'self';"
+        # HSTS
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        # X-Content-Type-Options
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        return response
 
     with app.app_context():
         from app.models.user import User
