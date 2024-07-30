@@ -10,7 +10,6 @@ import pymysql
 pymysql.install_as_MySQLdb()
 from app.db import db
 from app.config.config import Config
-from app.config.rabbitmq import start_consuming
 load_dotenv()
 jwt = JWTManager()
 migrate = Migrate()
@@ -43,7 +42,3 @@ def create_app():
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     return app
-def run_rabbitmq_subscriber(app):
-    with app.app_context():
-        app.logger.info("Iniciando el suscriptor de RabbitMQ")
-start_consuming()
