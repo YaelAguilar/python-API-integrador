@@ -8,10 +8,6 @@ from dotenv import load_dotenv
 import pymysql
 
 pymysql.install_as_MySQLdb()
-<<<<<<< HEAD
-=======
-
->>>>>>> b3fc211 ([UPDATE] routes)
 from app.db import db
 from app.config.config import Config
 from app.config.rabbitmq import start_consuming
